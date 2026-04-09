@@ -10,18 +10,24 @@ const path = require('path');
 const app = express();
 app.set('trust proxy', 1);
 
-// Lista de origens permitidas (HARDCODED para teste)
+// Lista de origens permitidas (leia da variável CONEXAO ou use fallback)
+const conexaoEnv = process.env.CONEXAO ? process.env.CONEXAO.split(',').map(s => s.trim()) : [];
 const allowedOrigins = [
+  ...conexaoEnv,
   'https://ango-vota-adm-fron.vercel.app',
   'http://localhost:4200'
-];
+].filter(Boolean);
+
+console.log('CORS allowed origins:', allowedOrigins); // log para debug
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin: function(origin, callback) {
+    // Permite requisições sem origin (ex: Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS bloqueado: ${origin}`);
+      console.warn(`CORS bloqueou origem: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -34,6 +40,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Configuração de sessão
 app.use(session({
   secret: process.env.KeySession,
   resave: false,
@@ -46,14 +53,36 @@ app.use(session({
   }
 }));
 
+// Servir arquivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// CSP (opcional, para o erro do Google Translate)
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://translate.google.com https://www.gstatic.com; " +
+    "style-src 'self' 'unsafe-inline' https://www.gstatic.com; " +
+    "font-src 'self' data:; " +
+    "img-src 'self' data: https:;"
+  );
+  next();
+});
+
+// Rotas
 app.use(routes);
 
+// Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ['GET', 'POST'], credentials: true },
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
   transports: ['websocket', 'polling']
 });
 
 app.set('io', io);
+
 module.exports = { server, io };
