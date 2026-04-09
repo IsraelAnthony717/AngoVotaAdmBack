@@ -1,0 +1,99 @@
+### Rota GET
+
+POST http://localhost:3002/perfil/cne
+Content-Type: application/json
+
+{
+    "numeroBI": "123456789LA045"
+}
+
+
+###
+
+
+
+### Rota GET
+
+POST http://localhost:3002/validarKYC
+Content-Type: application/json
+
+{
+    "kyc": true
+}
+
+
+###
+
+
+### Rota GET
+
+POST http://localhost:3002/criarUsuario
+Content-Type: application/json
+
+{
+    "numero_bi": "123456789LA045",
+    "id_perfil": "2"
+}
+
+
+###
+
+
+
+### Rota GET
+
+GET http://localhost:3002/ver
+Content-Type: application/json
+
+
+###
+
+
+### Rota GET
+
+GET http://localhost:3002/criarUtilizador
+Content-Type: application/json
+
+
+###
+
+
+### POST
+
+POST http://localhost:3003/cne/auth
+Content-Type: application/json
+
+{
+    "numeroBI": "003668221BA012"
+}
+
+
+###
+
+
+### POST
+
+POST http://localhost:3030/perfiloficial
+Content-Type: application/json
+
+{
+    "kyc": true
+}
+
+
+
+###
+
+
+
+### POST
+
+DELETE http://localhost:3002/deletar
+Content-Type: application/json
+
+
+
+
+###
+
+

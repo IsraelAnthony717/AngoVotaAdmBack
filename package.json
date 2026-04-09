@@ -1,0 +1,40 @@
+{
+  "name": "backend-admin-angovota",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node admin/servidor.js",
+    "dev": "nodemon admin/servidor.js",
+    "admin": "nodemon admin/servidor.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@simplewebauthn/server": "^13.2.2",
+    "@tensorflow/tfjs": "^4.22.0",
+    "base64url": "^3.0.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "image-js": "^0.35.3",
+    "ipinfo": "^1.5.2",
+    "multer": "^2.1.1",
+    "node-fetch": "^3.3.2",
+    "openai": "^6.33.0",
+    "pg": "^8.17.2",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7",
+    "sharp": "^0.34.5",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "sequelize-auto": "^0.8.8",
+    "sequelize-cli": "^6.6.5"
+  }
+}

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AngoVota</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: #051535;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(3, 10, 35, 0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(20, 80, 200, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 36px;
+      box-shadow: 0 2px 20px rgba(0, 50, 160, 0.4);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    /* Hexagon icon */
+    .logo-hex {
+      width: 28px;
+      height: 28px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: rgba(255,255,255,0.8);
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #fff; }
+
+    .nav-login {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(10, 50, 140, 0.6);
+      border: 1.5px solid rgba(50, 130, 255, 0.6);
+      color: #fff;
+      padding: 6px 20px 6px 6px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 50px;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    .nav-login:hover { background: rgba(0, 80, 200, 0.8); }
+
+    .login-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a6fff, #0a3fa0);
+      border: 1px solid rgba(100, 180, 255, 0.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-circle svg { width: 12px; height: 12px; fill: #fff; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 100px 60px 80px;
+    }
+
+    /* Background */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 70% at 60% 50%, rgba(0, 60, 180, 0.5) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 30% 60%, rgba(0, 40, 130, 0.3) 0%, transparent 60%),
+        linear-gradient(135deg, #020d2a 0%, #041128 40%, #061840 70%, #031020 100%);
+      z-index: 0;
+    }
+
+    /* Stars */
+    .stars { position: absolute; inset: 0; z-index: 1; }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle 4s infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Spheres */
+    .sphere {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(100, 180, 255, 0.95), rgba(0, 80, 200, 0.7) 45%, rgba(0, 30, 100, 0.4));
+      box-shadow: 0 0 25px rgba(0, 120, 255, 0.6), 0 0 8px rgba(100, 180, 255, 0.4);
+      z-index: 2;
+      animation: floatSphere ease-in-out infinite;
+    }
+    @keyframes floatSphere {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* Content */
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      max-width: 620px;
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 1px;
+      margin-bottom: 22px;
+      text-shadow: 0 0 30px rgba(0, 120, 255, 0.4);
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.6);
+      max-width: 400px;
+      margin-bottom: 40px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .btn-vote {
+      display: inline-block;
+      background: #1565f5;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      padding: 16px 50px;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(20, 100, 240, 0.5);
+    }
+    .btn-vote:hover {
+      background: #1e7aff;
+      box-shadow: 0 0 35px rgba(30, 122, 255, 0.7);
+    }
+
+    /* ── TICKER ── */
+    .ticker {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(2, 10, 30, 0.95);
+      border-top: 1px solid rgba(0, 80, 180, 0.4);
+      padding: 9px 0;
+      overflow: hidden;
+      z-index: 100;
+    }
+    .ticker-track {
+      display: flex;
+      gap: 80px;
+      white-space: nowrap;
+      animation: scroll 24s linear infinite;
+    }
+    .ticker-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.7);
+      text-transform: uppercase;
+    }
+    .ticker-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #3b9eff;
+      box-shadow: 0 0 5px #3b9eff;
+    }
+    @keyframes scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg class="logo-hex" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="14,2 25,8 25,20 14,26 3,20 3,8" fill="none" stroke="#3b9eff" stroke-width="1.8"/>
+      <polygon points="14,6 21,10 21,18 14,22 7,18 7,10" fill="rgba(30,100,255,0.2)" stroke="#3b9eff" stroke-width="1"/>
+    </svg>
+    AngoVota
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#">Votar Agora</a></li>
+    <li><a href="#">Serviços</a></li>
+    <li><a href="#">Eleições</a></li>
+    <li><a href="#">Segurança</a></li>
+  </ul>
+
+  <button class="nav-login">
+    <span class="login-circle">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </span>
+    Login
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="stars" id="stars"></div>
+
+  <!-- Spheres -->
+  <div class="sphere" style="width:70px;height:70px;top:12%;left:5%;animation-duration:6s;"></div>
+  <div class="sphere" style="width:45px;height:45px;top:35%;left:18%;animation-duration:8s;animation-delay:1s;"></div>
+  <div class="sphere" style="width:90px;height:90px;top:8%;right:8%;animation-duration:7s;animation-delay:0.5s;"></div>
+  <div class="sphere" style="width:60px;height:60px;top:55%;right:20%;animation-duration:9s;animation-delay:2s;"></div>
+  <div class="sphere" style="width:40px;height:40px;top:70%;left:10%;animation-duration:6.5s;animation-delay:1.5s;"></div>
+  <div class="sphere" style="width:30px;height:30px;top:75%;right:35%;animation-duration:10s;animation-delay:3s;"></div>
+  <div class="sphere" style="width:50px;height:50px;top:20%;right:38%;animation-duration:7.5s;animation-delay:0.8s;"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">Transparência<br>em Cada Voto</h1>
+    <p class="hero-subtitle">O sistema eleitoral digital do futuro, garantindo segurança e confiança em cada voto.</p>
+    <button class="btn-vote">Votar Agora</button>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Eleições Ativas: Luanda 2024</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Segurança Blockchain Garantida</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Votação Nacional</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Eleições Ativas: Luanda 2024</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Segurança Blockchain Garantida</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Votação Nacional</span>
+  </div>
+</div>
+
+<script>
+  const s = document.getElementById('stars');
+  for (let i = 0; i < 140; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    el.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-delay:${Math.random()*4}s;animation-duration:${2+Math.random()*4}s;`;
+    s.appendChild(el);
+  }
+</script>
+</body>
+</html>
