@@ -5,8 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node admin/servidor.js",
+    "postinstall": "npm run db-migrate",
     "dev": "nodemon admin/servidor.js",
-    "admin": "nodemon admin/servidor.js"
+    "admin": "nodemon admin/servidor.js",
+    "db-migrate": "npx sequelize-cli db:migrate --env production"
   },
   "keywords": [],
   "author": "",

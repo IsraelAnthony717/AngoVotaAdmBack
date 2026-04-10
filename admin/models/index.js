@@ -12,8 +12,14 @@ const db = {};
 //Buscar informações do banco, seguindo a ordem abaixo
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
-  logging: false
-});
+  logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false   // Necessário para certificados autoassinados
+    }
+  }
+});      
 
 
 fs
