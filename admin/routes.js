@@ -1,6 +1,10 @@
 const { Router } = require('express');
 const path = require('path');
 
+const multer = require('multer');
+const fs = require('fs');
+const upload = multer({ dest: 'uploads/' });
+
 const bilheteController = require('./controllers/bilheteController');
 
 const credenciaisController = require('./controllers/credenciaisController');
@@ -136,6 +140,23 @@ routes.get('/perguntar-ao-gemini', async (req, res)=>{
 
 
 
-
+// Validação de BI com IA (Mistral)
+routes.post('/validar-bi', upload.single('imagem'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ erro: 'Nenhuma imagem enviada' });
+    }
+    const caminhoImagem = req.file.path;
+    const resultado = await modeloGemini.VerificarBI(caminhoImagem);
+    fs.unlinkSync(caminhoImagem); // remove arquivo temporário
+    return res.json(resultado);
+  } catch (error) {
+    console.error('Erro ao validar BI:', error);
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    return res.status(500).json({ erro: error.message });
+  }
+});
 
 module.exports = routes;
