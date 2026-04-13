@@ -19,6 +19,7 @@ class CandidatoController {
     this.totalCandidatos      = this.totalCandidatos.bind(this);
     this.buscarCandidatoPorId = this.buscarCandidatoPorId.bind(this);
     this.criarCandidato       = this.criarCandidato.bind(this);
+    this.atualizarCandidato   = this.atualizarCandidato.bind(this);
     this.apagarCandidato      = this.apagarCandidato.bind(this);
   }
 
@@ -37,11 +38,17 @@ class CandidatoController {
     });
 
     const fileFilter = (req, file, cb) => {
+      console.log('📁 Verificando arquivo:', file.originalname, file.mimetype);
       const tipos = /jpeg|jpg|png|webp|avif/;
       const extOk  = tipos.test(path.extname(file.originalname).toLowerCase());
       const mimeOk = tipos.test(file.mimetype);
-      if (extOk && mimeOk) cb(null, true);
-      else cb(new Error('Apenas imagens são permitidas (jpeg, jpg, png, webp, avif).'));
+      console.log('📁 Extensão OK:', extOk, 'MIME OK:', mimeOk);
+      if (extOk && mimeOk) {
+        cb(null, true);
+      } else {
+        console.log('❌ Arquivo rejeitado:', file.originalname, file.mimetype);
+        cb(new Error('Apenas imagens são permitidas (jpeg, jpg, png, webp, avif).'));
+      }
     };
 
     return multer({
@@ -70,34 +77,56 @@ class CandidatoController {
   async listarCandidatos(req, res) {
     try {
       console.log('🔵 Buscando candidatos...');
+      console.log('🔍 Modelo candidatos disponível?', !!candidatos);
 
       const lista = await candidatos.findAll({
         attributes: [
           'id',
           'nome',
           'partido',
-          'idade',
           'foto_url',
           'slogan',
           'descricao',
           'backgroundurl',
+          'idade',
           'criando_em'
         ],
-        order: [['criando_em', 'ASC']]  // ordem de criação para o número sequencial ser consistente
+        order: [['criando_em', 'ASC']]
       });
 
-      // Adiciona o campo "numero" sequencial (1, 2, 3...) para o frontend exibir
-      const listaComNumero = lista.map((candidato, index) => ({
-        ...candidato.toJSON(),
+      console.log(`✅ Encontrados ${lista.length} candidatos`);
+
+      // Reconstruir URLs dinamicamente com base no host atual
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const listaComUrlsCorrigidas = lista.map((candidato) => {
+        const candidatoJson = candidato.toJSON();
+
+        // Extrair apenas o nome do arquivo da URL armazenada
+        const nomeFoto = candidatoJson.foto_url?.split('/uploads/')?.[1];
+        const nomeFundo = candidatoJson.backgroundurl?.split('/uploads/')?.[1];
+
+        // Reconstruir URLs com o host atual
+        if (nomeFoto) candidatoJson.foto_url = `${baseUrl}/uploads/${nomeFoto}`;
+        if (nomeFundo) candidatoJson.backgroundurl = `${baseUrl}/uploads/${nomeFundo}`;
+
+        return candidatoJson;
+      });
+
+      const listaComNumero = listaComUrlsCorrigidas.map((candidato, index) => ({
+        ...candidato,
         numero: index + 1
       }));
 
-      console.log(`✅ Encontrados ${lista.length} candidatos`);
       return res.status(200).json(listaComNumero);
 
     } catch (error) {
-      console.error('❌ Erro ao listar candidatos:', error);
-      return res.status(500).json({ error: error.message });
+      console.error('❌ Erro completo ao listar candidatos:', error);
+      console.error('Stack:', error.stack);
+      console.error('Mensagem:', error.message);
+      return res.status(500).json({
+        error: error.message,
+        detalhes: error.stack
+      });
     }
   }
 
@@ -137,7 +166,17 @@ class CandidatoController {
         return res.status(404).json({ error: 'Candidato não encontrado' });
       }
 
-      return res.status(200).json(candidato);
+      // Reconstruir URLs dinamicamente com base no host atual
+      const candidatoJson = candidato.toJSON();
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+      const nomeFoto = candidatoJson.foto_url?.split('/uploads/')?.[1];
+      const nomeFundo = candidatoJson.backgroundurl?.split('/uploads/')?.[1];
+
+      if (nomeFoto) candidatoJson.foto_url = `${baseUrl}/uploads/${nomeFoto}`;
+      if (nomeFundo) candidatoJson.backgroundurl = `${baseUrl}/uploads/${nomeFundo}`;
+
+      return res.status(200).json(candidatoJson);
 
     } catch (error) {
       console.error('❌ Erro ao buscar candidato:', error);
@@ -240,6 +279,96 @@ class CandidatoController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  // ============================================================
+// PUT /candidatos/:id — Atualizar candidato
+// ============================================================
+
+async atualizarCandidato(req, res) {
+  try {
+    const { id } = req.params;
+    console.log('🔵 PUT /candidatos/' + id);
+
+    await new Promise((resolve, reject) => {
+      this.upload(req, res, (erroUpload) => {
+        if (erroUpload) reject(erroUpload);
+        else resolve();
+      });
+    }).catch((erroUpload) => {
+      return res.status(400).json({ error: erroUpload.message });
+    });
+
+    if (res.headersSent) return;
+
+    console.log('📦 Body:', req.body);
+    console.log('📁 Files:', req.files);
+
+    const candidato = await candidatos.findByPk(id);
+    if (!candidato) {
+      console.log('❌ Candidato não encontrado');
+      return res.status(404).json({ error: 'Candidato não encontrado' });
+    }
+
+    const { nome, partido, idade, slogan, descricao } = req.body || {};
+    const dadosAtualizados = {};
+
+    if (nome !== undefined) dadosAtualizados.nome = nome;
+    if (partido !== undefined) dadosAtualizados.partido = partido;
+    if (idade !== undefined) {
+      const idadeNum = parseInt(idade);
+      if (isNaN(idadeNum)) {
+        return res.status(400).json({ error: 'Idade inválida' });
+      }
+      dadosAtualizados.idade = idadeNum;
+    }
+    if (slogan !== undefined) dadosAtualizados.slogan = slogan;
+    if (descricao !== undefined) dadosAtualizados.descricao = descricao;
+
+    const arquivos = req.files || {};
+    const temFoto = Array.isArray(arquivos.foto) && arquivos.foto.length > 0;
+    const temFundo = Array.isArray(arquivos.fundo) && arquivos.fundo.length > 0;
+
+    if (!temFoto && !temFundo && Object.keys(dadosAtualizados).length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo ou imagem para atualizar' });
+    }
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+    if (temFoto) {
+      const fotoUrl = `${baseUrl}/uploads/${arquivos.foto[0].filename}`;
+      dadosAtualizados.foto_url = fotoUrl;
+      const nomeFotoAntiga = candidato.foto_url?.split('/uploads/')?.[1];
+      if (nomeFotoAntiga) this._apagarFicheiro(path.join(this.pastaUploads, nomeFotoAntiga));
+    }
+
+    if (temFundo) {
+      const fundoUrl = `${baseUrl}/uploads/${arquivos.fundo[0].filename}`;
+      dadosAtualizados.backgroundurl = fundoUrl;
+      const nomeFundoAntigo = candidato.backgroundurl?.split('/uploads/')?.[1];
+      if (nomeFundoAntigo) this._apagarFicheiro(path.join(this.pastaUploads, nomeFundoAntigo));
+    }
+
+    console.log('📝 Atualizando com:', dadosAtualizados);
+    const candidatoAtualizado = await candidato.update(dadosAtualizados);
+    console.log('✅ Atualizado com sucesso');
+
+    const candidatoJson = candidatoAtualizado.toJSON();
+    const nomeFoto = candidatoJson.foto_url?.split('/uploads/')?.[1];
+    const nomeFundo = candidatoJson.backgroundurl?.split('/uploads/')?.[1];
+
+    if (nomeFoto) candidatoJson.foto_url = `${baseUrl}/uploads/${nomeFoto}`;
+    if (nomeFundo) candidatoJson.backgroundurl = `${baseUrl}/uploads/${nomeFundo}`;
+
+    return res.status(200).json({ success: true, candidato: candidatoJson });
+  } catch (error) {
+    console.error('❌ Erro interno:', error);
+    console.error('Stack:', error.stack);
+    return res.status(500).json({ error: error.message, stack: error.stack });
+  }
+}
+
+
+
 }
 
 module.exports = new CandidatoController();

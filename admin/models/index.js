@@ -3,27 +3,30 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
-//const process = require('process');
 const basename = path.basename(__filename);
-//const env = process.env.NODE_ENV || 'development';
-const config = require("../config/database");
+const env = process.env.NODE_ENV || 'development';
+const config = require('../config/database')[env];
 const db = {};
 
-//Buscar informações do banco, seguindo a ordem abaixo
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  logging: false,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false   // Necessário para certificados autoassinados
-    }
-  }
-});      
+let sequelize;
+if (config.url) {
+  // Usa a URL de conexão definida no ambiente
+  sequelize = new Sequelize(config.url, {
+    dialect: config.dialect,
+    logging: config.logging,
+    dialectOptions: config.dialectOptions
+  });
+} else {
+  // Fallback para conexão com parâmetros individuais (não utilizado neste projeto)
+  sequelize = new Sequelize(config.database, config.username, config.password, {
+    host: config.host,
+    dialect: config.dialect,
+    logging: config.logging,
+    dialectOptions: config.dialectOptions
+  });
+}
 
-
-fs
-  .readdirSync(__dirname)
+fs.readdirSync(__dirname)
   .filter(file => {
     return (
       file.indexOf('.') !== 0 &&

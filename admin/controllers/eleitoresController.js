@@ -424,6 +424,25 @@ class EleitoresController{
 
 
 
+			// ============================================================
+// Total de eleitores registados (sem filtros)
+// ============================================================
+async totalEleitoresRegistados(req, res) {
+  try {
+    const total = await eleitores.count(); // ou bilhetes_identidade.count()
+    console.log('Total de eleitores:', total);
+    return res.json({ total });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+
+
+
+
+
 
    }
 
