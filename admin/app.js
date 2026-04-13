@@ -9,7 +9,11 @@ const routes = require('./routes');
 const { Server } = require('socket.io');
 
 const app = express();
+const { sequelize } = require('./models');
 
+sequelize.sync({ alter: true }).then(() => {
+  console.log('✅ Banco sincronizado');
+});
 app.set('trust proxy', 1);
 
 // ========== CONFIGURAÇÃO DE ORIGENS PERMITIDAS ==========
