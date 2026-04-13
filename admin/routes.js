@@ -118,7 +118,7 @@ routes.get('/prever', async (req, res) => {
     return res.json(resultado);
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ error: 'Erro ao prever' });
+    return res.status(400).json({ error: 'Erro ao prever...' });
   }
 });
 
